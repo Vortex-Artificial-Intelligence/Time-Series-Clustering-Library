@@ -15,10 +15,12 @@ class BaseModel(ABC):
 
     def __init__(
         self,
+        cpu: Optional[bool] = False,
         device: Optional[int] = 0,
         dtype: Optional[torch.dtype] = torch.float64,
         random_state: Optional[int] = 42,
     ) -> None:
+        self.cpu = cpu
         self.cuda_index = device
         self.device = self.set_cuda_device()
 
@@ -74,7 +76,7 @@ class BaseClustering(BaseModel):
         random_state: Optional[int] = 42,
     ) -> None:
         super().__init__(
-            self, cpu=cpu, device=device, dtype=dtype, random_state=random_state
+            cpu=cpu, device=device, dtype=dtype, random_state=random_state
         )
 
         self.n_clusters = n_clusters
@@ -92,7 +94,7 @@ class BaseClustering(BaseModel):
         set_torch_dtype(self.dtype)
 
     @abstractmethod
-    def fit(self, X: ndarray | Tensor, *args) -> None:
+    def fit(self, X: ndarray | Tensor) -> None:
         """
         Fit the clustering model to the given data.
 
@@ -103,7 +105,7 @@ class BaseClustering(BaseModel):
         pass
 
     @abstractmethod
-    def predict(self, X: ndarray | Tensor, *args) -> ndarray | Tensor:
+    def predict(self, X: ndarray | Tensor) -> ndarray | Tensor:
         """
         Predict the cluster labels for the given data.
 
@@ -126,7 +128,7 @@ class BaseDimensionalityReduction(BaseModel):
         random_state: Optional[int] = 42,
     ) -> None:
         super().__init__(
-            self, cpu=cpu, device=device, dtype=dtype, random_state=random_state
+            cpu=cpu, device=device, dtype=dtype, random_state=random_state
         )
         self.n_components = n_components
 
