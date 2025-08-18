@@ -44,3 +44,15 @@
 | [Image Clustering with External Guidance](https://arxiv.org/abs/2310.11989) | 2024 | ICML oral                                          |
 | [Pixel-superpixel contrastive learning and pseudo-label correction for hyperspectral image clustering](https://ieeexplore.ieee.org/abstract/document/10447080/) | 2024 | IEEE ICASSP                                        |
 | [Superpixel-based and spatially regularized diffusion learning for unsupervised hyperspectral image clustering](https://ieeexplore.ieee.org/abstract/document/10491382/) | 2024 | IEEE Transactions on Geoscience and Remote Sensing |
+
+## Time Series Deep Learning Models
+
+| Title                                                        | Paper                                                  | Code                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------------ |
+| Informer: Beyond Efficient Transformer for Long Sequence Time-Series Forecasting | [[paper]](https://arxiv.org/abs/2012.07436)            | [[code]](https://github.com/zhouhaoyi/Informer2020)          |
+| Autoformer: Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting | [[paper]](https://arxiv.org/abs/2106.13008)            | [[code]](https://github.com/thuml/Autoformer)                |
+| Long-term Forecasting with TiDE: Time-series Dense Encoder   | [[paper]](https://arxiv.org/pdf/2304.08424)            | [[code]](https://github.com/thuml/Time-Series-Library/blob/main/models/TiDE.py) |
+| A Time Series is Worth 64 Words: Long-term Forecasting with Transformers | [[paper]](https://arxiv.org/abs/2211.14730)            | [[code]](https://github.com/yuqinie98/PatchTST)              |
+| iTransformer: Inverted Transformers Are Effective for Time Series Forecasting | [[paper]](https://arxiv.org/abs/2310.06625)            | [[code]](https://github.com/thuml/iTransformer)              |
+| TimeMixer: Decomposable Multiscale Mixing for Time Series Forecasting | [[paper]](http://arxiv.org/abs/2405.14616)             | [[code]](https://github.com/kwuking/TimeMixer)               |
+| SAMformer: Unlocking the Potential of Transformers in Time Series Forecasting with Sharpness-Aware Minimization and Channel-Wise Attention | [[paper]](https://arxiv.org/abs/2402.10198)            | [[code]](https://github.com/romilbert/samformer)             |
