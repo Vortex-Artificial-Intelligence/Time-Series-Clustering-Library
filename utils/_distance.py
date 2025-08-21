@@ -6,6 +6,10 @@ Created on 2025/08/20 16:09:21
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan
+
+动态时间扭曲 DTW
+
+DTW + KNN
 """
 import torch
 
@@ -89,7 +93,7 @@ def minkowski_distance(x: torch.Tensor, y: torch.Tensor, p: float = 3) -> torch.
     :param p: Distance parameter (1=Manhattan, 2=Euclidean, ∞=Chebyshev).
     :return: Minkowski distance between x and y as a tensor with shape [n_samples].
     """
-    if p == float('inf'):
+    if p == float("inf"):
         return chebyshev_distance(x, y)
     return torch.sum(torch.abs(x - y) ** p, dim=1) ** (1 / p)
 
@@ -127,4 +131,4 @@ if __name__ == "__main__":
     print(minkowski_distance(x, y, p=3))
 
     print("\nMinkowski distance (p=∞, equivalent to Chebyshev):")
-    print(minkowski_distance(x, y, p=float('inf')))
+    print(minkowski_distance(x, y, p=float("inf")))

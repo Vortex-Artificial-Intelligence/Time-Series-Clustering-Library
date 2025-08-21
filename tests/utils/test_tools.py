@@ -23,7 +23,7 @@ class TestTools(unittest.TestCase):
             set_torch_dtype(dtype)
             tensor = torch.randn(5, 5, requires_grad=True)
             self.assertTrue(dtype, tensor.dtype)
-            
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
