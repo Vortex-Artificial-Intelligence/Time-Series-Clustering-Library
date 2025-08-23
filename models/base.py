@@ -5,7 +5,7 @@ import torch
 from torch import Tensor
 
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 from utils import set_cuda_device, set_torch_dtype
 
@@ -128,18 +128,26 @@ class BaseDimensionalityReduction(BaseModel):
     ) -> None:
         super().__init__(cpu=cpu, device=device, dtype=dtype, random_state=random_state)
         self.n_components = n_components
+        self.components_ = None
+        self.mean_ = None
+        self.explained_variance_ = None
+        self.explained_variance_ratio_ = None
 
     def __str__(self) -> str:
         """Get the name of this cluster"""
         return "BaseDimensionalityReduction"
 
     @abstractmethod
-    def fit_transform(self, X: ndarray | Tensor, *args) -> ndarray | Tensor:
-        """
-        Execute dimensionality reduction algorithm.
-
-        :param X: the input numpy array or torch tensor to be reduced.
-        :param args:
-        :return:
-        """
+    def fit(self, X: Union[ndarray, Tensor]) -> "BaseDimensionalityReduction":
+        """Fit the model with X"""
         pass
+
+    @abstractmethod
+    def transform(self, X: Union[ndarray, Tensor]) -> Union[ndarray, Tensor]:
+        """Apply dimensionality reduction to X"""
+        pass
+
+    def fit_transform(self, X: Union[ndarray, Tensor], *args) -> Union[ndarray, Tensor]:
+        """Fit the model with X and apply the dimensionality reduction on X"""
+        self.fit(X)
+        return self.transform(X)
