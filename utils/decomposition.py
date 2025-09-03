@@ -1,7 +1,10 @@
 import torch
+from torch import Tensor
+
+from typing import Tuple
 
 
-def svd_flip(u, v):
+def svd_flip(u: Tensor, v: Tensor) -> Tuple[Tensor, Tensor]:
     """Sign correction to ensure deterministic output from SVD"""
     # columns of u, rows of v
     max_abs_cols = torch.argmax(torch.abs(u), dim=0)

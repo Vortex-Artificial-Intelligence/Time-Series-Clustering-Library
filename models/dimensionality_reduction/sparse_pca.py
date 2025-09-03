@@ -7,7 +7,6 @@ from typing import Optional, Union
 import warnings
 
 from models.base import BaseDimensionalityReduction
-from utils.validation import check_array
 
 
 class SparsePCA(BaseDimensionalityReduction):
@@ -20,36 +19,24 @@ class SparsePCA(BaseDimensionalityReduction):
     ----------
     n_components : int
         Number of sparse components to extract.
-        
     alpha : float, default=1
         Sparsity controlling parameter. Higher values lead to sparser components.
-        
     ridge_alpha : float, default=0.01
         Amount of ridge shrinkage to apply in order to improve conditioning.
-        
     max_iter : int, default=1000
         Maximum number of iterations to perform.
-        
     tol : float, default=1e-8
         Tolerance for the stopping condition.
-        
     method : {'lars', 'cd'}, default='cd'
         Method to be used for optimization.
         lars: uses the least angle regression method (memory intensive)
         cd: uses coordinate descent (more memory efficient)
-        
-    n_jobs : int, default=None
-        Number of parallel jobs to run.
-        
     cpu : bool, default=False
         If True, use CPU only.
-        
     device : int, default=0
         CUDA device index.
-        
     dtype : torch.dtype, default=torch.float64
         Data type for tensors.
-        
     random_state : int, default=42
         Seed for random number generation.
         
@@ -57,10 +44,8 @@ class SparsePCA(BaseDimensionalityReduction):
     ----------
     components_ : Tensor of shape (n_components, n_features)
         Sparse components extracted from the data.
-        
     error_ : Tensor
         Reconstruction error at each iteration.
-        
     n_iter_ : int
         Number of iterations run.
     """
@@ -73,7 +58,6 @@ class SparsePCA(BaseDimensionalityReduction):
         max_iter: int = 1000,
         tol: float = 1e-8,
         method: str = "cd",
-        n_jobs: Optional[int] = None,
         cpu: Optional[bool] = False,
         device: Optional[int] = 0,
         dtype: Optional[torch.dtype] = torch.float64,
@@ -91,7 +75,6 @@ class SparsePCA(BaseDimensionalityReduction):
         self.max_iter = max_iter
         self.tol = tol
         self.method = method
-        self.n_jobs = n_jobs
         self.error_ = None
         self.n_iter_ = 0
         
@@ -112,7 +95,7 @@ class SparsePCA(BaseDimensionalityReduction):
         self : object
             Returns the instance itself.
         """
-        X = check_array(X, dtype=self.dtype, device=self.device)
+        X = self.check_input(X)
         n_samples, n_features = X.shape
         
         # Center data
@@ -186,7 +169,7 @@ class SparsePCA(BaseDimensionalityReduction):
         code : Tensor of shape (n_samples, n_components)
             Transformed data.
         """
-        X = check_array(X, dtype=self.dtype, device=self.device)
+        X = self.check_input(X)
         X_centered = X - self.mean_
         return self._update_code(X_centered)
     
@@ -482,9 +465,7 @@ if __name__ == "__main__":
         max_iter=50,
         tol=1e-6,
         method="cd",
-        cpu=True,  # Force CPU usage to avoid CUDA issues
-        dtype=torch.float64,
-        random_state=42,
+        # cpu=True,
     )
     
     # Fit and transform
@@ -496,9 +477,3 @@ if __name__ == "__main__":
     print(f"Number of iterations: {spca.n_iter_}")
     if spca.n_iter_ > 0:
         print(f"Final reconstruction error: {spca.error_[-1]:.6f}")
-    
-    # Test transform on new data
-    X_new = torch.randn(10, n_features, dtype=torch.float64)
-    X_new_transformed = spca.transform(X_new)
-    
-    print(f"New data transformed shape: {X_new_transformed.shape}")

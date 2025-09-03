@@ -6,7 +6,6 @@ from numpy import ndarray
 from typing import Union, Optional, Callable
 
 from models.base import BaseDimensionalityReduction
-from utils.validation import check_array
 from utils.kernels import linear_kernel, rbf_kernel, polynomial_kernel, sigmoid_kernel, cosine_similarity_kernel
 
 
@@ -66,7 +65,7 @@ class KernelPCA(BaseDimensionalityReduction):
     
     def fit(self, X: Union[ndarray, Tensor]) -> "KernelPCA":
         """Fit the model with X"""
-        X = check_array(X, dtype=self.dtype, device=self.device)
+        X = self.check_input(X)
         self.X_fit_ = X.clone()
         
         # Get kernel function
@@ -110,7 +109,7 @@ class KernelPCA(BaseDimensionalityReduction):
         if self.alphas_ is None:
             raise RuntimeError("KernelPCA must be fitted before transforming data")
             
-        X = check_array(X, dtype=self.dtype, device=self.device)
+        X = self.check_input(X)
         
         # Get kernel function
         kernel_fn = self._get_kernel(self.kernel)
@@ -134,13 +133,12 @@ class KernelPCA(BaseDimensionalityReduction):
 
 # Test
 if __name__ == "__main__":
-    # Generate sample data (non-linear)
     torch.manual_seed(42)
-    n_samples = 10
+    n_samples = 1000
     t = torch.linspace(0, 4 * np.pi, n_samples)
-    X = torch.stack([torch.sin(t), torch.cos(t)], dim=1)
-    X += 0.1 * torch.randn(n_samples, 2)
-    
+    X = torch.stack([torch.sin(t), torch.cos(t), t], dim=1)
+    X += 0.1 * torch.randn(n_samples, 3)
+
     # Test KernelPCA with RBF kernel
     kpca = KernelPCA(n_components=1, kernel="rbf", gamma=0.1)
     X_transformed = kpca.fit_transform(X)

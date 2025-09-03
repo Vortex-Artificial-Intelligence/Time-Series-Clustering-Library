@@ -1,6 +1,6 @@
+import torch
 import random
 import numpy as np
-import torch
 
 from typing import Optional
 
@@ -15,6 +15,8 @@ def set_random_state(seed: Optional[int] = 42) -> None:
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
 
 
 def set_cuda_device(
