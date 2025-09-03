@@ -5,7 +5,7 @@ from numpy import ndarray
 from typing import Union, Optional, Tuple
 
 from models.base import BaseDimensionalityReduction
-from utils._distance import euclidean_distance, manhattan_distance, chebyshev_distance, minkowski_distance
+from utils.distance import euclidean_distance, manhattan_distance, chebyshev_distance, minkowski_distance
 
 
 class MDS(BaseDimensionalityReduction):

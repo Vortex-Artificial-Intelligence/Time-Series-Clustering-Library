@@ -2,7 +2,7 @@ import torch
 from torch import Tensor
 
 from typing import Tuple
-from utils._distance import euclidean_distance, manhattan_distance, chebyshev_distance, minkowski_distance
+from utils.distance import euclidean_distance, manhattan_distance, chebyshev_distance, minkowski_distance
 
 
 def knn_graph(X: Tensor, k: int, metric: str = "euclidean", p: int = 3) -> Tuple[Tensor, Tensor]:
