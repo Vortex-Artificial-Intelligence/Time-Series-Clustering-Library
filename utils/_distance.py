@@ -12,6 +12,9 @@ Created on 2025/08/20 16:09:21
 DTW + KNN
 """
 import torch
+from sys import maxsize
+
+from typing import Optional, Callable
 
 
 def euclidean_distance(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
@@ -96,6 +99,50 @@ def minkowski_distance(x: torch.Tensor, y: torch.Tensor, p: float = 3) -> torch.
     if p == float("inf"):
         return chebyshev_distance(x, y)
     return torch.sum(torch.abs(x - y) ** p, dim=1) ** (1 / p)
+
+
+def dtw_distance(
+        x: torch.Tensor,
+        y: torch.Tensor,
+        d: Callable = lambda x, y: torch.abs(x - y),
+        max_warping_window: Optional[int] = 10000,
+) -> torch.Tensor:
+    """
+    Returns the DTW similarity distance between two 2-D timeseries numpy arrays.
+
+    :param x: array of shape [n_samples, n_timepoints]
+    :param y: array of shape [n_samples, n_timepoints]
+                 Two arrays containing n_samples of timeseries data
+                 whose DTW distance between each sample of A and B
+                 will be compared
+    :param d: DistanceMetric object (default = abs(x-y)) the distance measure used for A_i - B_j in the
+              DTW dynamic programming function
+    :param max_warping_window: int, optional (default = infinity)
+                               Maximum warping window allowed by the DTW dynamic programming function
+    :return: DTW distance between A and B
+    """
+    # Create cost matrix via broadcasting with large int
+    M, N = len(x), len(y)
+    cost = maxsize * torch.ones((M, N))
+
+    # Initialize the first row and column
+    print(cost)
+    cost[0, 0] = d(x[0], y[0])
+
+    for i in range(1, M):
+        cost[i, 0] = cost[i - 1, 0] + d(x[i], y[0])
+
+    for j in range(1, N):
+        cost[0, j] = cost[0, j - 1] + d(x[0], y[j])
+
+    # Populate rest of cost matrix within window
+    for i in range(1, M):
+        for j in range(max(1, i - max_warping_window), min(N, i + max_warping_window)):
+            choices = cost[i - 1, j - 1], cost[i, j - 1], cost[i - 1, j]
+            cost[i, j] = torch.min(choices) + d(x[i], y[j])
+
+    # Return DTW distance given window
+    return cost[-1, -1]
 
 
 # Example usage and testing
