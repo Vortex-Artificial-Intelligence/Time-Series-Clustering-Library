@@ -1,12 +1,10 @@
 import torch
 from torch import Tensor
 
-import numpy as np
 from numpy import ndarray
 from typing import Union, Optional
 
 from models.base import BaseDimensionalityReduction
-from utils.validation import check_array
 from utils.decomposition import svd_flip
 
 
@@ -37,7 +35,7 @@ class PCA(BaseDimensionalityReduction):
 
     def fit(self, X: Union[ndarray, Tensor]) -> "PCA":
         """Fit the model with X"""
-        X = check_array(X, dtype=self.dtype, device=self.device)
+        X = self.check_input(X)
 
         # Center data
         self.mean_ = torch.mean(X, dim=0)
@@ -64,7 +62,7 @@ class PCA(BaseDimensionalityReduction):
         if self.components_ is None:
             raise RuntimeError("PCA must be fitted before transforming data")
 
-        X = check_array(X, dtype=self.dtype, device=self.device)
+        X = self.check_input(X)
         X_centered = X - self.mean_
 
         # Project data
@@ -81,7 +79,7 @@ class PCA(BaseDimensionalityReduction):
         if self.components_ is None:
             raise RuntimeError("PCA must be fitted before inverse transforming data")
 
-        X = check_array(X, dtype=self.dtype, device=self.device)
+        X = self.check_input(X)
 
         if self.whiten:
             X = X * torch.sqrt(self.explained_variance_[: self.n_components])
@@ -92,9 +90,8 @@ class PCA(BaseDimensionalityReduction):
 
 # Test
 if __name__ == "__main__":
-    # Generate sample data
     torch.manual_seed(42)
-    X = torch.randn(10, 5).to("cuda")
+    X = torch.randn(1000, 100)
 
     # Test PCA
     pca = PCA(n_components=2)
@@ -105,5 +102,6 @@ if __name__ == "__main__":
     print("Explained variance ratio:", pca.explained_variance_ratio_)
 
     # Test inverse transform
+    X = X.to(pca.device)
     X_reconstructed = pca.inverse_transform(X_transformed)
     print("Reconstruction error:", torch.mean((X - X_reconstructed) ** 2).item())

@@ -7,7 +7,7 @@ from torch import Tensor
 from abc import ABC, abstractmethod
 from typing import Optional, Tuple, Union
 
-from utils import set_cuda_device, set_torch_dtype
+from utils.tools import set_cuda_device, set_torch_dtype, set_random_state
 
 
 class BaseModel(ABC):
@@ -23,11 +23,10 @@ class BaseModel(ABC):
         self.cpu = cpu
         self.cuda_index = device
         self.device = self.set_cuda_device()
-
         self.dtype = dtype
-        self.set_cuda_device()
-
+        self.set_torch_dtype()
         self.random_state = random_state
+        self.set_random_state()
 
         # Record the data entered by the user and convert it into the same format later
         self.inputs_type = None
@@ -44,14 +43,18 @@ class BaseModel(ABC):
         """Set the PyTorch dtype for global"""
         set_torch_dtype(self.dtype)
 
+    def set_random_state(self) -> None:
+        """Set the random state for reproducibility"""
+        set_random_state(self.random_state)
+
     def ndarray2tensor(self, x: ndarray) -> Tensor:
         """
         Convert a numpy array to torch.tensor.
         
         :param x: the input numpy array.
         :return: the converted torch tensor.
-        """ ""
-        return torch.from_numpy(x).to(self.device)
+        """
+        return torch.from_numpy(x).to(self.device).to(self.dtype)
 
     @staticmethod
     def tensor2ndarray(x: Tensor) -> ndarray:
@@ -91,6 +94,10 @@ class BaseClustering(BaseModel):
     def set_torch_dtype(self) -> None:
         """Set the PyTorch dtype for global"""
         set_torch_dtype(self.dtype)
+
+    def set_random_state(self) -> None:
+        """Set the random state for reproducibility"""
+        set_random_state(self.random_state)
 
     @abstractmethod
     def fit(self, X: ndarray | Tensor) -> None:
@@ -136,6 +143,25 @@ class BaseDimensionalityReduction(BaseModel):
     def __str__(self) -> str:
         """Get the name of this cluster"""
         return "BaseDimensionalityReduction"
+
+    def check_input(self, X: Union[ndarray, Tensor]) -> Tensor:
+        """
+        Check and convert input to tensor with proper dtype and device.
+        
+        :param X: input data
+        :return: converted tensor
+        """
+        if isinstance(X, ndarray):
+            X = self.ndarray2tensor(X)
+        elif isinstance(X, Tensor):
+            X = X.to(device=self.device, dtype=self.dtype)
+        else:
+            raise ValueError("Input must be numpy array or torch tensor")
+        
+        if X.ndim != 2:
+            raise ValueError("Expected 2D array, got {}D array instead".format(X.ndim))
+            
+        return X
 
     @abstractmethod
     def fit(self, X: Union[ndarray, Tensor]) -> "BaseDimensionalityReduction":
