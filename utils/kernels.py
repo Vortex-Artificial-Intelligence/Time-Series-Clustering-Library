@@ -7,7 +7,9 @@ def linear_kernel(X: Tensor, Y: Tensor) -> Tensor:
     return X @ Y.T
 
 
-def polynomial_kernel(X: Tensor, Y: Tensor, degree: int = 3, gamma: float = None, coef0: float = 1) -> Tensor:
+def polynomial_kernel(
+    X: Tensor, Y: Tensor, degree: int = 3, gamma: float = None, coef0: float = 1
+) -> Tensor:
     """Polynomial kernel"""
     if gamma is None:
         gamma = 1.0 / X.shape[1]
@@ -30,7 +32,9 @@ def rbf_kernel(X: Tensor, Y: Tensor, gamma: float = None) -> Tensor:
     return K
 
 
-def sigmoid_kernel(X: Tensor, Y: Tensor, gamma: float = None, coef0: float = 1) -> Tensor:
+def sigmoid_kernel(
+    X: Tensor, Y: Tensor, gamma: float = None, coef0: float = 1
+) -> Tensor:
     """Sigmoid kernel"""
     if gamma is None:
         gamma = 1.0 / X.shape[1]

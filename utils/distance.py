@@ -102,10 +102,10 @@ def minkowski_distance(x: torch.Tensor, y: torch.Tensor, p: float = 3) -> torch.
 
 
 def dtw_distance(
-        x: torch.Tensor,
-        y: torch.Tensor,
-        d: Callable = lambda x, y: torch.abs(x - y),
-        max_warping_window: Optional[int] = 10000,
+    x: torch.Tensor,
+    y: torch.Tensor,
+    d: Callable = lambda x, y: torch.abs(x - y),
+    max_warping_window: Optional[int] = 10000,
 ) -> torch.Tensor:
     """
     Returns the DTW similarity distance between two 2-D timeseries numpy arrays.

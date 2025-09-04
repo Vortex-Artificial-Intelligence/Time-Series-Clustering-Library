@@ -50,7 +50,7 @@ class BaseModel(ABC):
     def ndarray2tensor(self, x: ndarray) -> Tensor:
         """
         Convert a numpy array to torch.tensor.
-        
+
         :param x: the input numpy array.
         :return: the converted torch tensor.
         """
@@ -147,7 +147,7 @@ class BaseDimensionalityReduction(BaseModel):
     def check_input(self, X: Union[ndarray, Tensor]) -> Tensor:
         """
         Check and convert input to tensor with proper dtype and device.
-        
+
         :param X: input data
         :return: converted tensor
         """
@@ -157,10 +157,10 @@ class BaseDimensionalityReduction(BaseModel):
             X = X.to(device=self.device, dtype=self.dtype)
         else:
             raise ValueError("Input must be numpy array or torch tensor")
-        
+
         if X.ndim != 2:
             raise ValueError("Expected 2D array, got {}D array instead".format(X.ndim))
-            
+
         return X
 
     @abstractmethod
