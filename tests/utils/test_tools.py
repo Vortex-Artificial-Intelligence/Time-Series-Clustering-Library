@@ -5,7 +5,6 @@ from utils import set_random_state, set_cuda_device, set_torch_dtype
 
 
 class TestTools(unittest.TestCase):
-
     def test_set_random_seed(self):
         """test the function `set_random_seed`"""
         for seed in range(10):

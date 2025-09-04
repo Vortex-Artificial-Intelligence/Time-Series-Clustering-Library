@@ -161,7 +161,9 @@ class FactorAnalysis(BaseDimensionalityReduction):
                     # Compute the rotation angle
                     num = 2 * torch.sum(u * v * (u**2 - v**2) - gamma * u * v)
                     den = torch.sum(
-                        (u**2 - v**2) ** 2 - 4 * u**2 * v**2 - gamma * (u**2 - v**2)
+                        (u**2 - v**2) ** 2
+                        - 4 * u**2 * v**2
+                        - gamma * (u**2 - v**2)
                     )
                     theta = 0.25 * torch.atan2(num, den)
 
