@@ -98,8 +98,8 @@ class MLPEncoder(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """全连接深度神经网络中的正向传播部分"""
-        x = self.encode(x=x)
-        return self.decode(x=x)
+        x_enc = self.encode(x=x)
+        return self.decode(x=x_enc)
 
 
 class CNNEncoder(nn.Module):
@@ -123,7 +123,7 @@ class CNNEncoder(nn.Module):
             kernel_list if isinstance(kernel_list, list) else list(kernel_list)
         )
 
-        assert len(self.channels_list) != len(self.kernel_list)
+        assert len(self.channels_list) == len(self.kernel_list)
 
         self.channels_list = [n_channels] + self.channels_list
         self.params_list = [
@@ -134,8 +134,12 @@ class CNNEncoder(nn.Module):
                 self.kernel_list,
             )
         ]
+        print("params_list:", len(self.params_list))
 
         self.bias = bias
+
+        self.encoder = self._built_encoder()
+        self.decoder = self._built_decoder()
 
     def _built_encoder(self) -> nn.ModuleList:
         """构建CNN模块的编码器"""
@@ -164,6 +168,10 @@ class CNNEncoder(nn.Module):
 
     def _built_decoder(self) -> nn.Module:
         """构建CNN模块的编码器"""
+        in_features = self.context_len
+        for _ in range(0, len(self.params_list)):
+            in_features = int(in_features / 2)
+
         return nn.Sequential(
             nn.Conv1d(
                 in_channels=self.channels_list[-1],
@@ -175,25 +183,33 @@ class CNNEncoder(nn.Module):
             ),
             nn.ReLU(inplace=True),
             nn.Linear(
-                in_features=self.context_len // (2 * len(self.params_list)),
+                in_features=in_features,
                 out_features=self.context_len // 2,
                 bias=True,
             ),
             nn.ReLU(inplace=True),
             nn.Linear(
-                in_features=self.context_len // 2, out_features=self.context_len // 2
+                in_features=self.context_len // 2,
+                out_features=self.context_len,
+                bias=True,
             ),
         )
 
+    def encode(self, x: torch.Tensor) -> torch.Tensor:
+        """"""
+        for layer in self.encoder:
+            x = layer(x)
+            print("encode:", x.shape)
+        return x
 
-class FCNEncoder(nn.Module):
-    def __init__(self):
-        super(FCNEncoder, self).__init__()
+    def decode(self, x: torch.Tensor) -> torch.Tensor:
+        """"""
+        return self.decoder(x)
 
-
-class ResNetEncoder(nn.Module):
-    def __init__(self):
-        super(ResNetEncoder, self).__init__()
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """CNN编码器架构的正向传播部分"""
+        x_enc = self.encode(x=x)
+        return self.decode(x=x_enc)
 
 
 class RNNEncoder(nn.Module):
@@ -207,7 +223,16 @@ class TransformerEncoder(nn.Module):
 
 
 if __name__ == "__main__":
-    mlp = MLPEncoder(context_len=512, n_channels=3)
-    print(mlp)
-    x = torch.randn(size=(10, 3, 512))
-    print(mlp(x).shape)
+    # mlp = MLPEncoder(context_len=512, n_channels=3)
+    # print(mlp)
+    x = torch.randn(size=(1, 3, 512))
+    # print(mlp(x).shape)
+
+    cnn = CNNEncoder(
+        context_len=512,
+        n_channels=3,
+        channels_list=[10, 10, 10, 10, 10],
+        kernel_list=[3, 3, 3, 3, 3],
+    )
+    print(cnn)
+    print(cnn(x).shape)
