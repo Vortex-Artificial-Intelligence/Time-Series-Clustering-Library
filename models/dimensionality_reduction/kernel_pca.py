@@ -16,7 +16,47 @@ from utils.kernels import (
 
 
 class KernelPCA(BaseDimensionalityReduction):
-    """Kernel Principal Component Analysis (KernelPCA)"""
+    """
+    Kernel Principal Component Analysis (KernelPCA)
+    
+    A nonlinear dimensionality reduction technique that uses kernel methods
+    to extend PCA to handle non-linearly separable data by mapping it to a
+    higher-dimensional feature space.
+    
+    Parameters:
+    -----------
+    n_components : int
+        Number of principal components to keep
+    kernel : str or callable, default='linear'
+        Kernel function to use ('linear', 'poly', 'rbf', 'sigmoid', 'cosine')
+    gamma : float, optional, default=None
+        Kernel coefficient for 'rbf', 'poly' and 'sigmoid' kernels
+    degree : int, default=3
+        Degree for polynomial kernel
+    coef0 : float, default=1
+        Independent term in polynomial and sigmoid kernels
+    kernel_params : dict, optional, default=None
+        Additional parameters for the kernel function
+    alpha : float, default=1e-6
+        Regularization parameter for numerical stability
+    cpu : bool, optional, default=False
+        If True, forces computation on CPU
+    device : int, optional, default=0
+        CUDA device index for GPU computation
+    dtype : torch.dtype, optional, default=torch.float64
+        Data type for tensor computations
+    random_state : int, optional, default=42
+        Random seed for reproducibility
+    
+    Attributes:
+    -----------
+    X_fit_ : Tensor of shape (n_samples, n_features)
+        Training data used for fitting the model
+    lambdas_ : Tensor of shape (n_components,)
+        Eigenvalues of the centered kernel matrix
+    alphas_ : Tensor of shape (n_samples, n_components)
+        Eigenvectors of the centered kernel matrix, normalized by eigenvalues
+    """
 
     def __init__(
         self,

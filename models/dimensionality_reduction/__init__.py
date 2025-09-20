@@ -6,6 +6,8 @@ from .factor_analysis import FactorAnalysis
 from .ica import ICA
 from .mds import MDS
 from .isomap import Isomap
+from .lle import LLE
+from .tsne import TSNE
 
 __all__ = [
     "PCA",
@@ -16,4 +18,6 @@ __all__ = [
     "ICA",
     "MDS",
     "Isomap",
+    "LLE",
+    "TSNE"
 ]

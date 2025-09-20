@@ -9,7 +9,47 @@ from models.base import BaseDimensionalityReduction
 
 
 class IncrementalPCA(BaseDimensionalityReduction):
-    """Incremental Principal Component Analysis (IncrementalPCA)"""
+    """
+    Incremental Principal Component Analysis (IncrementalPCA)
+    
+    An online dimensionality reduction technique that processes data in batches,
+    allowing for efficient computation of principal components on large datasets
+    that may not fit in memory.
+    
+    Parameters:
+    -----------
+    n_components : int
+        Number of principal components to keep
+    whiten : bool, default=False
+        Whether to transform data to unit variance after projection
+    cpu : bool, optional, default=False
+        If True, forces computation on CPU
+    device : int, optional, default=0
+        CUDA device index for GPU computation
+    dtype : torch.dtype, optional, default=torch.float64
+        Data type for tensor computations
+    random_state : int, optional, default=42
+        Random seed for reproducibility
+    
+    Attributes:
+    -----------
+    components_ : Tensor of shape (n_components, n_features)
+        Principal components (eigenvectors)
+    explained_variance_ : Tensor of shape (n_components,)
+        Variance explained by each selected component
+    explained_variance_ratio_ : Tensor of shape (n_components,)
+        Percentage of variance explained by each component
+    singular_values_ : Tensor of shape (n_components,)
+        Singular values corresponding to each component
+    mean_ : Tensor of shape (n_features,)
+        Mean of training data
+    var_ : Tensor of shape (n_features,)
+        Variance of training data
+    total_samples_seen_ : int
+        Total number of samples processed during training
+    iterated : bool
+        Flag indicating if at least one partial_fit has been performed
+    """
 
     def __init__(
         self,

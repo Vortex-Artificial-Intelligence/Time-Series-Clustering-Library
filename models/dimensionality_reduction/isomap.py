@@ -29,11 +29,11 @@ class Isomap(BaseDimensionalityReduction):
     path_method : str, default='FW'
         Method to use for finding shortest paths ('FW', 'D')
     eigen_solver : str, default='dense'
-        Eigen solver to use ('dense')    # ToDo : 'arpack'
-    tol : float, default=0    # ToDo
-        Convergence tolerance passed to arpack or lobpcg
-    max_iter : int, default=None    # ToDo
-        Maximum number of iterations for the arpack solver
+        Eigen solver to use ('dense', 'arpack')
+    tol : float, default=1e-6
+        Convergence tolerance for iterative eigen solvers
+    max_iter : int, default=100
+        Maximum number of iterations for iterative eigen solvers
     cpu : bool, default=False
         If True, use CPU only
     device : int, default=0
@@ -47,10 +47,6 @@ class Isomap(BaseDimensionalityReduction):
     -----------
     embedding_ : Tensor of shape (n_samples, n_components)
         Stores the embedding vectors
-    kernel_pca_ : object
-        KernelPCA object used for the embedding
-    nbrs_ : NearestNeighbors instance
-        Stores nearest neighbors instance
     dist_matrix_ : Tensor of shape (n_samples, n_samples)
         Stores the geodesic distance matrix of the training data
     n_features_in_ : int
@@ -65,8 +61,8 @@ class Isomap(BaseDimensionalityReduction):
         p: int = 3,
         path_method: str = "FW",
         eigen_solver: str = "dense",
-        tol: float = 0,
-        max_iter: Optional[int] = None,
+        tol: float = 1e-6,
+        max_iter: Optional[int] = 100,
         cpu: Optional[bool] = False,
         device: Optional[int] = 0,
         dtype: Optional[torch.dtype] = torch.float64,
@@ -90,8 +86,54 @@ class Isomap(BaseDimensionalityReduction):
         self.dist_matrix_ = None
         self.n_features_in_ = None
 
+        if self.eigen_solver not in ['dense', 'arpack']:
+            raise ValueError(f"eigen_solver must be 'dense' or 'arpack', got {self.eigen_solver}")
+
     def __str__(self) -> str:
         return "Isomap"
+    
+    def _power_iteration(self, A, n_components, max_iter, tol):
+        """Power iteration method for finding the largest eigenvalues and eigenvectors"""
+        n = A.shape[0]
+        eigenvectors = torch.zeros((n, n_components), device=self.device, dtype=self.dtype)
+        eigenvalues = torch.zeros(n_components, device=self.device, dtype=self.dtype)
+        
+        for i in range(n_components):
+            # Initialize a random vector
+            b = torch.randn(n, device=self.device, dtype=self.dtype)
+            b = b / torch.norm(b)
+            
+            for _ in range(max_iter):
+                # Multiply by A
+                b_new = A @ b
+                
+                # Orthogonalize against previous eigenvectors
+                for j in range(i):
+                    b_new = b_new - torch.dot(b_new, eigenvectors[:, j]) * eigenvectors[:, j]
+                
+                # Normalize
+                b_new_norm = torch.norm(b_new)
+                if b_new_norm < 1e-12:
+                    break
+                b_new = b_new / b_new_norm
+                
+                # Check convergence
+                if torch.norm(b_new - b) < tol:
+                    break
+                    
+                b = b_new
+            
+            # Compute Rayleigh quotient (eigenvalue)
+            eigenvalue = torch.dot(b, A @ b)
+            
+            # Store results
+            eigenvalues[i] = eigenvalue
+            eigenvectors[:, i] = b
+            
+            # Deflate matrix
+            A = A - eigenvalue * torch.outer(b, b)
+        
+        return eigenvalues, eigenvectors
 
     def _compute_geodesic_distances(self, X: Tensor) -> Tensor:
         """Compute geodesic distances using k-NN graph and shortest path algorithm"""
@@ -175,20 +217,34 @@ class Isomap(BaseDimensionalityReduction):
         )
         K = -0.5 * H @ D**2 @ H
 
-        # Eigen decomposition (use dense)
-        eigenvalues, eigenvectors = torch.linalg.eigh(K)
-
-        # Sort eigenvalues and eigenvectors in descending order
-        idx = torch.argsort(eigenvalues, descending=True)
-        eigenvalues = eigenvalues[idx]
-        eigenvectors = eigenvectors[:, idx]
+        # Eigen decomposition
+        if self.eigen_solver == 'dense':
+            # Use dense solver
+            eigenvalues, eigenvectors = torch.linalg.eigh(K)
+            
+            # Sort eigenvalues and eigenvectors in descending order
+            idx = torch.argsort(eigenvalues, descending=True)
+            eigenvalues = eigenvalues[idx]
+            eigenvectors = eigenvectors[:, idx]
+        elif self.eigen_solver == 'arpack':
+            # Use power iteration method
+            eigenvalues, eigenvectors = self._power_iteration(
+                K, self.n_components, self.max_iter, self.tol
+            )
+            
+            # Sort in descending order
+            idx = torch.argsort(eigenvalues, descending=True)
+            eigenvalues = eigenvalues[idx]
+            eigenvectors = eigenvectors[:, idx]
+        else:
+            raise ValueError(f"Unsupported eigen_solver: {self.eigen_solver}")
 
         # Keep top n_components
         eigenvalues = eigenvalues[: self.n_components]
         eigenvectors = eigenvectors[:, : self.n_components]
 
         # Compute embedding
-        embedding = eigenvectors @ torch.diag(torch.sqrt(eigenvalues))
+        embedding = eigenvectors @ torch.diag(torch.sqrt(torch.abs(eigenvalues)))
 
         return embedding
 
@@ -234,9 +290,15 @@ if __name__ == "__main__":
 
     X = torch.stack([x, y, z], dim=1)
 
-    # Test Isomap
+    # Test Isomap with dense solver
     isomap = Isomap(n_components=2, n_neighbors=10)
     X_transformed = isomap.fit_transform(X)
 
     print("Original shape:", X.shape)
     print("Transformed shape:", X_transformed.shape)
+    
+    # Test Isomap with arpack solver
+    isomap_arpack = Isomap(n_components=2, n_neighbors=10, eigen_solver='arpack')
+    X_transformed_arpack = isomap_arpack.fit_transform(X)
+    
+    print("ARPACK transformed shape:", X_transformed_arpack.shape)

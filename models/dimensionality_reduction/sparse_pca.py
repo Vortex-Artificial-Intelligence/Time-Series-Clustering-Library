@@ -480,7 +480,7 @@ if __name__ == "__main__":
     n_samples, n_features = 100, 10
     X = torch.randn(n_samples, n_features, dtype=torch.float64)
 
-    # Create and fit SparsePCA
+    # SparsePCA
     spca = SparsePCA(
         n_components=5,
         alpha=0.1,
