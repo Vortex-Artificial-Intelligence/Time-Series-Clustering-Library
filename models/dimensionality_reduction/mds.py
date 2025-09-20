@@ -28,6 +28,8 @@ class MDS(BaseDimensionalityReduction):
         If True, perform metric MDS; otherwise, perform non-metric MDS
     dissimilarity : str, default='euclidean'
         Dissimilarity measure to use ('euclidean', 'manhattan', 'chebyshev', 'minkowski', 'precomputed')
+    p : int, default=3
+        Distance parameter for minkowski, (1=Manhattan, 2=Euclidean, ∞=Chebyshev)
     n_init : int, default=4
         Number of times the SMACOF algorithm will be run with different initializations
     max_iter : int, default=300
@@ -62,6 +64,7 @@ class MDS(BaseDimensionalityReduction):
         n_components: int,
         metric: bool = True,
         dissimilarity: str = "euclidean",
+        p: int = 3,
         n_init: int = 4,
         max_iter: int = 300,
         eps: float = 1e-3,
@@ -80,6 +83,7 @@ class MDS(BaseDimensionalityReduction):
         )
         self.metric = metric
         self.dissimilarity = dissimilarity
+        self.p = p
         self.n_init = n_init
         self.max_iter = max_iter
         self.eps = eps
@@ -108,10 +112,16 @@ class MDS(BaseDimensionalityReduction):
         else:
             raise ValueError(f"Unknown dissimilarity measure: {self.dissimilarity}")
 
-        for i in range(n_samples):
-            for j in range(i + 1, n_samples):
-                D[i, j] = calculate_method(X[i].unsqueeze(0), X[j].unsqueeze(0))
-                D[j, i] = D[i, j]
+        if self.dissimilarity == "minkowski":
+            for i in range(n_samples):
+                for j in range(i + 1, n_samples):
+                    D[i, j] = calculate_method(X[i].unsqueeze(0), X[j].unsqueeze(0), p=self.p)
+                    D[j, i] = D[i, j]
+        else:
+            for i in range(n_samples):
+                for j in range(i + 1, n_samples):
+                    D[i, j] = calculate_method(X[i].unsqueeze(0), X[j].unsqueeze(0))
+                    D[j, i] = D[i, j]
 
         return D
 

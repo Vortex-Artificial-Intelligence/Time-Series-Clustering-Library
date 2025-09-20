@@ -80,24 +80,11 @@ class BaseClustering(BaseModel):
         random_state: Optional[int] = 42,
     ) -> None:
         super().__init__(cpu=cpu, device=device, dtype=dtype, random_state=random_state)
-
         self.n_clusters = n_clusters
 
     def __str__(self) -> str:
         """Get the name of this cluster"""
         return "BaseClustering"
-
-    def set_cuda_device(self) -> torch.cuda.device:
-        """Set the CUDA device to accelerate computing"""
-        return set_cuda_device(cpu=self.cpu, cuda_index=self.cuda_index)
-
-    def set_torch_dtype(self) -> None:
-        """Set the PyTorch dtype for global"""
-        set_torch_dtype(self.dtype)
-
-    def set_random_state(self) -> None:
-        """Set the random state for reproducibility"""
-        set_random_state(self.random_state)
 
     @abstractmethod
     def fit(self, X: ndarray | Tensor) -> None:

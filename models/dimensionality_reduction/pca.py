@@ -9,7 +9,40 @@ from utils.decomposition import svd_flip
 
 
 class PCA(BaseDimensionalityReduction):
-    """Principal Component Analysis (PCA)"""
+    """
+    Principal Component Analysis (PCA)
+
+    A linear dimensionality reduction technique that uses Singular Value Decomposition (SVD)
+    to project data to a lower-dimensional space while preserving as much variance as possible.
+
+    Parameters:
+    -----------
+    n_components : int
+        Number of principal components to keep
+    whiten : bool, default=False
+        Whether to transform data to unit variance after projection
+    cpu : bool, optional, default=False
+        If True, forces computation on CPU
+    device : int, optional, default=0
+        CUDA device index for GPU computation
+    dtype : torch.dtype, optional, default=torch.float64
+        Data type for tensor computations
+    random_state : int, optional, default=42
+        Random seed for reproducibility
+
+    Attributes:
+    -----------
+    components_ : Tensor of shape (n_components, n_features)
+        Principal components (eigenvectors)
+    explained_variance_ : Tensor of shape (n_components,)
+        Variance explained by each selected component
+    explained_variance_ratio_ : Tensor of shape (n_components,)
+        Percentage of variance explained by each component
+    singular_values_ : Tensor of shape (n_components,)
+        Singular values corresponding to each component
+    mean_ : Tensor of shape (n_features,)
+        Mean of training data
+    """
 
     def __init__(
         self,

@@ -34,11 +34,11 @@ def set_cuda_device(
     )
 
 
-def set_torch_dtype(dtype: torch.dtype = torch.float32) -> None:
+def set_torch_dtype(dtype: torch.dtype = torch.float64) -> None:
     """
     Set the PyTorch dtype for running global.
 
-    :param dtype: the dtype of torch.Tensor, defaults to torch.float32.
+    :param dtype: the dtype of torch.Tensor, defaults to torch.float64.
     :return: None.
     """
     torch.set_default_dtype(dtype)

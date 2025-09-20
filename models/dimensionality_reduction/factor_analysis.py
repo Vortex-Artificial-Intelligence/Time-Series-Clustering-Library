@@ -25,7 +25,7 @@ class FactorAnalysis(BaseDimensionalityReduction):
     tol : float, default=1e-8
         Tolerance for the convergence of the EM algorithm
     rotation : str, default=None
-        Rotation method to apply to factors ('varimax', etc.)    # ToDo : 'quartimax'
+        Rotation method to apply to factors ('varimax', 'quartimax')
     cpu : bool, default=False
         If True, use CPU only
     device : int, default=0
@@ -186,6 +186,69 @@ class FactorAnalysis(BaseDimensionalityReduction):
         # Apply the rotation to the original loadings
         return loadings @ R
 
+    def _quartimax_rotation(
+        self,
+        loadings: Tensor,
+        max_iter: int = 100,
+        tol: float = 1e-6,
+    ) -> Tensor:
+        """Apply quartimax rotation to factor loadings
+        
+        Quartimax rotation is an orthogonal rotation method that simplifies
+        the columns of the factor loading matrix by maximizing the variance
+        of squared loadings.
+        """
+        n_features, n_factors = loadings.shape
+
+        # Normalize the loadings matrix
+        norm_factor = torch.sqrt(torch.sum(loadings**2, dim=1, keepdim=True))
+        norm_factor = torch.clamp(norm_factor, min=1e-8)  # Avoid division by zero
+        loadings_norm = loadings / norm_factor
+
+        R = torch.eye(n_factors, device=self.device, dtype=self.dtype)
+
+        for i in range(max_iter):
+            loadings_rot = loadings_norm @ R
+
+            # Compute the objective function (quartimax criterion)
+            lambda_sq = loadings_rot**2
+            obj_prev = torch.sum(torch.var(lambda_sq))
+
+            # Update the rotation matrix using a simplified approach
+            # Quartimax can be seen as a special case of varimax with gamma=0
+            for j in range(n_factors):
+                for k in range(j + 1, n_factors):
+                    # Compute the submatrix for factors j and k
+                    u = loadings_norm[:, j]
+                    v = loadings_norm[:, k]
+
+                    # Compute the rotation angle for quartimax
+                    # Quartimax maximizes the sum of fourth powers of loadings
+                    num = 2 * torch.sum(u * v * (u**2 - v**2))
+                    den = torch.sum((u**2 - v**2)**2 - 4 * u**2 * v**2)
+                    theta = 0.25 * torch.atan2(num, den)
+
+                    # Create the rotation matrix for factors j and k
+                    R_jk = torch.eye(n_factors, device=self.device, dtype=self.dtype)
+                    R_jk[j, j] = torch.cos(theta)
+                    R_jk[j, k] = -torch.sin(theta)
+                    R_jk[k, j] = torch.sin(theta)
+                    R_jk[k, k] = torch.cos(theta)
+
+                    # Update the rotation matrix
+                    R = R @ R_jk
+
+            # Check convergence
+            loadings_rot = loadings_norm @ R
+            lambda_sq = loadings_rot**2
+            obj = torch.sum(torch.var(lambda_sq))
+
+            if torch.abs(obj - obj_prev) < tol:
+                break
+
+        # Apply the rotation to the original loadings
+        return loadings @ R
+
     def fit(self, X: Union[ndarray, Tensor]) -> "FactorAnalysis":
         """Fit the Factor Analysis model with X using the EM algorithm"""
         X = self.check_input(X)
@@ -256,6 +319,8 @@ class FactorAnalysis(BaseDimensionalityReduction):
         # Apply rotation if specified
         if self.rotation == "varimax":
             loadings = self._varimax_rotation(loadings)
+        elif self.rotation == "quartimax":
+            loadings = self._quartimax_rotation(loadings)
 
         self.components_ = loadings.T  # Store as (n_components, n_features)
         self.noise_variance_ = psi
@@ -312,18 +377,52 @@ if __name__ == "__main__":
     noise = torch.randn(n_samples, n_features, dtype=torch.float64) * 0.1
     X = true_scores @ true_loadings.T + noise
 
-    # Test FactorAnalysis
-    fa = FactorAnalysis(
+    # Test FactorAnalysis with varimax rotation
+    print("Testing FactorAnalysis with varimax rotation:")
+    fa_varimax = FactorAnalysis(
         n_components=n_factors,
         max_iter=100,
-        rotation="varimax",
-        # cpu=True,
+        rotation="varimax"
     )
-    X_transformed = fa.fit_transform(X)
+    X_transformed_varimax = fa_varimax.fit_transform(X)
 
     print("Original shape:", X.shape)
-    print("Transformed shape:", X_transformed.shape)
-    print("Log-likelihood:", fa.log_likelihood_)
-    print("Number of iterations:", fa.n_iter_)
-    print("Noise variance shape:", fa.noise_variance_.shape)
-    print("Components shape:", fa.components_.shape)
+    print("Transformed shape:", X_transformed_varimax.shape)
+    print("Log-likelihood:", fa_varimax.log_likelihood_)
+    print("Number of iterations:", fa_varimax.n_iter_)
+    print("Noise variance shape:", fa_varimax.noise_variance_.shape)
+    print("Components shape:", fa_varimax.components_.shape)
+    print()
+
+    # Test FactorAnalysis with quartimax rotation
+    print("Testing FactorAnalysis with quartimax rotation:")
+    fa_quartimax = FactorAnalysis(
+        n_components=n_factors,
+        max_iter=100,
+        rotation="quartimax"
+    )
+    X_transformed_quartimax = fa_quartimax.fit_transform(X)
+
+    print("Original shape:", X.shape)
+    print("Transformed shape:", X_transformed_quartimax.shape)
+    print("Log-likelihood:", fa_quartimax.log_likelihood_)
+    print("Number of iterations:", fa_quartimax.n_iter_)
+    print("Noise variance shape:", fa_quartimax.noise_variance_.shape)
+    print("Components shape:", fa_quartimax.components_.shape)
+    print()
+
+    # Test FactorAnalysis without rotation
+    print("Testing FactorAnalysis without rotation:")
+    fa_no_rotation = FactorAnalysis(
+        n_components=n_factors,
+        max_iter=100,
+        rotation=None
+    )
+    X_transformed_no_rotation = fa_no_rotation.fit_transform(X)
+
+    print("Original shape:", X.shape)
+    print("Transformed shape:", X_transformed_no_rotation.shape)
+    print("Log-likelihood:", fa_no_rotation.log_likelihood_)
+    print("Number of iterations:", fa_no_rotation.n_iter_)
+    print("Noise variance shape:", fa_no_rotation.noise_variance_.shape)
+    print("Components shape:", fa_no_rotation.components_.shape)
