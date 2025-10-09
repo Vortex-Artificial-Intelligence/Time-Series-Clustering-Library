@@ -5,7 +5,7 @@ import torch
 from torch import Tensor
 
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, Any
 
 from utils.tools import set_cuda_device, set_torch_dtype, set_random_state
 
@@ -72,7 +72,7 @@ class BaseClustering(BaseModel):
 
     def __init__(
         self,
-        n_clusters: int,
+        n_clusters: Optional[int] = None,
         distance: Optional[str] = "euclidean",
         cpu: Optional[bool] = False,
         device: Optional[int] = 0,
@@ -81,32 +81,57 @@ class BaseClustering(BaseModel):
     ) -> None:
         super().__init__(cpu=cpu, device=device, dtype=dtype, random_state=random_state)
         self.n_clusters = n_clusters
+        self.distance = distance
+        self.labels_ = None
+        self.cluster_centers_ = None
 
     def __str__(self) -> str:
         """Get the name of this cluster"""
         return "BaseClustering"
 
+    def _check_input(self, X: Union[ndarray, Tensor]) -> Tensor:
+        """Check and convert input to tensor"""
+        if isinstance(X, ndarray):
+            X_tensor = self.ndarray2tensor(X)
+        elif isinstance(X, Tensor):
+            X_tensor = X.to(self.device).to(self.dtype)
+        else:
+            raise TypeError("Input must be numpy array or torch tensor")
+
+        if len(X_tensor.shape) != 2:
+            raise ValueError("Input must be 2-dimensional")
+
+        return X_tensor
+
     @abstractmethod
-    def fit(self, X: ndarray | Tensor) -> None:
+    def fit(self, X: Union[ndarray, Tensor]) -> Any:
         """
         Fit the clustering model to the given data.
 
         :param X: the input data to be clustered, ndarray or Tensor.
-        :param args: other arguments passed to the fit method.
-        :return: None.
+        :return: self.
         """
         pass
 
     @abstractmethod
-    def predict(self, X: ndarray | Tensor) -> ndarray | Tensor:
+    def predict(self, X: Union[ndarray, Tensor]) -> Union[ndarray, Tensor]:
         """
         Predict the cluster labels for the given data.
 
         :param X: the input data to be clustered, ndarray or Tensor.
-        :param args: other arguments passed to the fit method.
         :return: the cluster labels for the given data of ndarray or Tensor.
         """
         pass
+
+    def fit_predict(self, X: Union[ndarray, Tensor]) -> Union[ndarray, Tensor]:
+        """
+        Fit the model and return cluster labels.
+
+        :param X: the input data to be clustered, ndarray or Tensor.
+        :return: the cluster labels for the given data of ndarray or Tensor.
+        """
+        self.fit(X)
+        return self.labels_
 
 
 class BaseDimensionalityReduction(BaseModel):

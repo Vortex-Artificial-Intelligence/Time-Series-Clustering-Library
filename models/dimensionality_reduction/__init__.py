@@ -19,5 +19,5 @@ __all__ = [
     "MDS",
     "Isomap",
     "LLE",
-    "TSNE"
+    "TSNE",
 ]

@@ -193,7 +193,7 @@ class FactorAnalysis(BaseDimensionalityReduction):
         tol: float = 1e-6,
     ) -> Tensor:
         """Apply quartimax rotation to factor loadings
-        
+
         Quartimax rotation is an orthogonal rotation method that simplifies
         the columns of the factor loading matrix by maximizing the variance
         of squared loadings.
@@ -225,7 +225,7 @@ class FactorAnalysis(BaseDimensionalityReduction):
                     # Compute the rotation angle for quartimax
                     # Quartimax maximizes the sum of fourth powers of loadings
                     num = 2 * torch.sum(u * v * (u**2 - v**2))
-                    den = torch.sum((u**2 - v**2)**2 - 4 * u**2 * v**2)
+                    den = torch.sum((u**2 - v**2) ** 2 - 4 * u**2 * v**2)
                     theta = 0.25 * torch.atan2(num, den)
 
                     # Create the rotation matrix for factors j and k
@@ -380,9 +380,7 @@ if __name__ == "__main__":
     # Test FactorAnalysis with varimax rotation
     print("Testing FactorAnalysis with varimax rotation:")
     fa_varimax = FactorAnalysis(
-        n_components=n_factors,
-        max_iter=100,
-        rotation="varimax"
+        n_components=n_factors, max_iter=100, rotation="varimax"
     )
     X_transformed_varimax = fa_varimax.fit_transform(X)
 
@@ -397,9 +395,7 @@ if __name__ == "__main__":
     # Test FactorAnalysis with quartimax rotation
     print("Testing FactorAnalysis with quartimax rotation:")
     fa_quartimax = FactorAnalysis(
-        n_components=n_factors,
-        max_iter=100,
-        rotation="quartimax"
+        n_components=n_factors, max_iter=100, rotation="quartimax"
     )
     X_transformed_quartimax = fa_quartimax.fit_transform(X)
 
@@ -413,11 +409,7 @@ if __name__ == "__main__":
 
     # Test FactorAnalysis without rotation
     print("Testing FactorAnalysis without rotation:")
-    fa_no_rotation = FactorAnalysis(
-        n_components=n_factors,
-        max_iter=100,
-        rotation=None
-    )
+    fa_no_rotation = FactorAnalysis(n_components=n_factors, max_iter=100, rotation=None)
     X_transformed_no_rotation = fa_no_rotation.fit_transform(X)
 
     print("Original shape:", X.shape)
