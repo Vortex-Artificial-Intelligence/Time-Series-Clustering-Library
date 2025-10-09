@@ -18,11 +18,11 @@ from utils.kernels import (
 class KernelPCA(BaseDimensionalityReduction):
     """
     Kernel Principal Component Analysis (KernelPCA)
-    
+
     A nonlinear dimensionality reduction technique that uses kernel methods
     to extend PCA to handle non-linearly separable data by mapping it to a
     higher-dimensional feature space.
-    
+
     Parameters:
     -----------
     n_components : int
@@ -47,7 +47,7 @@ class KernelPCA(BaseDimensionalityReduction):
         Data type for tensor computations
     random_state : int, optional, default=42
         Random seed for reproducibility
-    
+
     Attributes:
     -----------
     X_fit_ : Tensor of shape (n_samples, n_features)

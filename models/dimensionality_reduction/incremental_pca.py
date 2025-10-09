@@ -11,11 +11,11 @@ from models.base import BaseDimensionalityReduction
 class IncrementalPCA(BaseDimensionalityReduction):
     """
     Incremental Principal Component Analysis (IncrementalPCA)
-    
+
     An online dimensionality reduction technique that processes data in batches,
     allowing for efficient computation of principal components on large datasets
     that may not fit in memory.
-    
+
     Parameters:
     -----------
     n_components : int
@@ -30,7 +30,7 @@ class IncrementalPCA(BaseDimensionalityReduction):
         Data type for tensor computations
     random_state : int, optional, default=42
         Random seed for reproducibility
-    
+
     Attributes:
     -----------
     components_ : Tensor of shape (n_components, n_features)

@@ -84,7 +84,7 @@ class BaseClustering(BaseModel):
         self.distance = distance
         self.labels_ = None
         self.cluster_centers_ = None
-        
+
     def __str__(self) -> str:
         """Get the name of this cluster"""
         return "BaseClustering"
@@ -97,10 +97,10 @@ class BaseClustering(BaseModel):
             X_tensor = X.to(self.device).to(self.dtype)
         else:
             raise TypeError("Input must be numpy array or torch tensor")
-        
+
         if len(X_tensor.shape) != 2:
             raise ValueError("Input must be 2-dimensional")
-            
+
         return X_tensor
 
     @abstractmethod
@@ -189,4 +189,3 @@ class BaseDimensionalityReduction(BaseModel):
         """Fit the model with X and apply the dimensionality reduction on X"""
         self.fit(X)
         return self.transform(X)
-

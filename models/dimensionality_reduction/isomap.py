@@ -86,53 +86,60 @@ class Isomap(BaseDimensionalityReduction):
         self.dist_matrix_ = None
         self.n_features_in_ = None
 
-        if self.eigen_solver not in ['dense', 'arpack']:
-            raise ValueError(f"eigen_solver must be 'dense' or 'arpack', got {self.eigen_solver}")
+        if self.eigen_solver not in ["dense", "arpack"]:
+            raise ValueError(
+                f"eigen_solver must be 'dense' or 'arpack', got {self.eigen_solver}"
+            )
 
     def __str__(self) -> str:
         return "Isomap"
-    
+
     def _power_iteration(self, A, n_components, max_iter, tol):
         """Power iteration method for finding the largest eigenvalues and eigenvectors"""
         n = A.shape[0]
-        eigenvectors = torch.zeros((n, n_components), device=self.device, dtype=self.dtype)
+        eigenvectors = torch.zeros(
+            (n, n_components), device=self.device, dtype=self.dtype
+        )
         eigenvalues = torch.zeros(n_components, device=self.device, dtype=self.dtype)
-        
+
         for i in range(n_components):
             # Initialize a random vector
             b = torch.randn(n, device=self.device, dtype=self.dtype)
             b = b / torch.norm(b)
-            
+
             for _ in range(max_iter):
                 # Multiply by A
                 b_new = A @ b
-                
+
                 # Orthogonalize against previous eigenvectors
                 for j in range(i):
-                    b_new = b_new - torch.dot(b_new, eigenvectors[:, j]) * eigenvectors[:, j]
-                
+                    b_new = (
+                        b_new
+                        - torch.dot(b_new, eigenvectors[:, j]) * eigenvectors[:, j]
+                    )
+
                 # Normalize
                 b_new_norm = torch.norm(b_new)
                 if b_new_norm < 1e-12:
                     break
                 b_new = b_new / b_new_norm
-                
+
                 # Check convergence
                 if torch.norm(b_new - b) < tol:
                     break
-                    
+
                 b = b_new
-            
+
             # Compute Rayleigh quotient (eigenvalue)
             eigenvalue = torch.dot(b, A @ b)
-            
+
             # Store results
             eigenvalues[i] = eigenvalue
             eigenvectors[:, i] = b
-            
+
             # Deflate matrix
             A = A - eigenvalue * torch.outer(b, b)
-        
+
         return eigenvalues, eigenvectors
 
     def _compute_geodesic_distances(self, X: Tensor) -> Tensor:
@@ -218,20 +225,20 @@ class Isomap(BaseDimensionalityReduction):
         K = -0.5 * H @ D**2 @ H
 
         # Eigen decomposition
-        if self.eigen_solver == 'dense':
+        if self.eigen_solver == "dense":
             # Use dense solver
             eigenvalues, eigenvectors = torch.linalg.eigh(K)
-            
+
             # Sort eigenvalues and eigenvectors in descending order
             idx = torch.argsort(eigenvalues, descending=True)
             eigenvalues = eigenvalues[idx]
             eigenvectors = eigenvectors[:, idx]
-        elif self.eigen_solver == 'arpack':
+        elif self.eigen_solver == "arpack":
             # Use power iteration method
             eigenvalues, eigenvectors = self._power_iteration(
                 K, self.n_components, self.max_iter, self.tol
             )
-            
+
             # Sort in descending order
             idx = torch.argsort(eigenvalues, descending=True)
             eigenvalues = eigenvalues[idx]
@@ -296,9 +303,9 @@ if __name__ == "__main__":
 
     print("Original shape:", X.shape)
     print("Transformed shape:", X_transformed.shape)
-    
+
     # Test Isomap with arpack solver
-    isomap_arpack = Isomap(n_components=2, n_neighbors=10, eigen_solver='arpack')
+    isomap_arpack = Isomap(n_components=2, n_neighbors=10, eigen_solver="arpack")
     X_transformed_arpack = isomap_arpack.fit_transform(X)
-    
+
     print("ARPACK transformed shape:", X_transformed_arpack.shape)

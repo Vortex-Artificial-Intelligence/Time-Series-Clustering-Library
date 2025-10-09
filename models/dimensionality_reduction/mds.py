@@ -115,7 +115,9 @@ class MDS(BaseDimensionalityReduction):
         if self.dissimilarity == "minkowski":
             for i in range(n_samples):
                 for j in range(i + 1, n_samples):
-                    D[i, j] = calculate_method(X[i].unsqueeze(0), X[j].unsqueeze(0), p=self.p)
+                    D[i, j] = calculate_method(
+                        X[i].unsqueeze(0), X[j].unsqueeze(0), p=self.p
+                    )
                     D[j, i] = D[i, j]
         else:
             for i in range(n_samples):
