@@ -478,21 +478,18 @@ if __name__ == "__main__":
 
     for method in methods:
         for metric in metrics:
-            try:
-                print(f"\nTesting method={method}, metric={metric}")
-                tsne = TSNE(
-                    n_components=2,
-                    perplexity=30,
-                    n_iter=500,
-                    verbose=1,
-                    method=method,
-                    metric=metric,
-                )
-                X_transformed = tsne.fit_transform(X)
+            print(f"\nTesting method={method}, metric={metric}")
+            tsne = TSNE(
+                n_components=2,
+                perplexity=30,
+                n_iter=500,
+                verbose=1,
+                method=method,
+                metric=metric,
+            )
+            X_transformed = tsne.fit_transform(X)
 
-                print(f"Original shape: {X.shape}")
-                print(f"Transformed shape: {X_transformed.shape}")
-                print(f"KL divergence: {tsne.kl_divergence_}")
-                print(f"Number of iterations: {tsne.n_iter_}")
-            except Exception as e:
-                print(f"Error with method={method}, metric={metric}: {e}")
+            print(f"Original shape: {X.shape}")
+            print(f"Transformed shape: {X_transformed.shape}")
+            print(f"KL divergence: {tsne.kl_divergence_}")
+            print(f"Number of iterations: {tsne.n_iter_}")

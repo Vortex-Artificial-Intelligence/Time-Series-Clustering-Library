@@ -454,7 +454,6 @@ if __name__ == "__main__":
     torch.manual_seed(42)
     n_samples = 100
 
-    # Generate Swiss roll
     t = 3 * np.pi / 2 * (1 + 2 * torch.rand(n_samples, dtype=torch.float64))
     x = t * torch.cos(t)
     y = 30 * torch.rand(n_samples, dtype=torch.float64)
@@ -466,13 +465,10 @@ if __name__ == "__main__":
     methods = ["standard", "modified", "hessian", "ltsa"]
 
     for method in methods:
-        try:
-            lle = LLE(n_components=2, n_neighbors=12, method=method)
-            X_transformed = lle.fit_transform(X)
+        lle = LLE(n_components=2, n_neighbors=12, method=method)
+        X_transformed = lle.fit_transform(X)
 
-            print(
-                f"{method} LLE - Original shape: {X.shape}, Transformed shape: {X_transformed.shape}"
-            )
-            print(f"{method} LLE - Reconstruction error: {lle.reconstruction_error_}")
-        except Exception as e:
-            print(f"Error with {method} LLE: {e}")
+        print(
+            f"{method} LLE - Original shape: {X.shape}, Transformed shape: {X_transformed.shape}"
+        )
+        print(f"{method} LLE - Reconstruction error: {lle.reconstruction_error_}")
