@@ -467,6 +467,8 @@ if __name__ == "__main__":
     for method in methods:
         lle = LLE(n_components=2, n_neighbors=12, method=method)
         X_transformed = lle.fit_transform(X)
-        
-        print(f"{method} LLE - Original shape: {X.shape}, Transformed shape: {X_transformed.shape}")
+
+        print(
+            f"{method} LLE - Original shape: {X.shape}, Transformed shape: {X_transformed.shape}"
+        )
         print(f"{method} LLE - Reconstruction error: {lle.reconstruction_error_}")

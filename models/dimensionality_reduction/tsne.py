@@ -488,7 +488,7 @@ if __name__ == "__main__":
                 metric=metric,
             )
             X_transformed = tsne.fit_transform(X)
-            
+
             print(f"Original shape: {X.shape}")
             print(f"Transformed shape: {X_transformed.shape}")
             print(f"KL divergence: {tsne.kl_divergence_}")
