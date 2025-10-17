@@ -1,11 +1,10 @@
-import numpy as np
 from numpy import ndarray
 
 import torch
 from torch import Tensor
 
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple, Union, Any
+from typing import Optional, Union, Any
 
 from utils.tools import set_cuda_device, set_torch_dtype, set_random_state
 
@@ -28,7 +27,6 @@ class BaseModel(ABC):
         self.random_state = random_state
         self.set_random_state()
 
-        # Record the data entered by the user and convert it into the same format later
         self.inputs_type = None
 
     def __str__(self) -> str:

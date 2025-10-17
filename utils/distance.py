@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 用于存放和记录多种不同距离的计算函数
 
@@ -11,6 +10,7 @@ Created on 2025/08/20 16:09:21
 
 DTW + KNN
 """
+
 import torch
 from sys import maxsize
 
