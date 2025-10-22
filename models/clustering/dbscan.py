@@ -57,12 +57,10 @@ class DBSCAN(BaseClustering):
 
     def _region_query(self, X: Tensor, point_idx: int) -> List[int]:
         """Find all points within eps distance of point"""
-
         if self.distance == "minkowski":
             distances = self.calculate_method(X, X[point_idx].unsqueeze(0), p=self.p)
         else:
             distances = self.calculate_method(X, X[point_idx].unsqueeze(0))
-
         neighbors = torch.where(distances <= self.eps)[0]
         return neighbors.tolist()
 
@@ -81,7 +79,6 @@ class DBSCAN(BaseClustering):
         while i < len(neighbors):
             neighbor_idx = neighbors[i]
 
-            # If neighbor is unvisited
             if labels[neighbor_idx] == -1:
                 labels[neighbor_idx] = cluster_id
             elif labels[neighbor_idx] == 0:  # If neighbor is noise
@@ -129,13 +126,12 @@ class DBSCAN(BaseClustering):
         # Convert labels to tensor
         labels_tensor = torch.tensor(labels, device=self.device, dtype=torch.long)
 
-        # Store results
         self.labels_ = labels_tensor
         self.core_sample_indices_ = torch.tensor(
             core_samples, device=self.device, dtype=torch.long
         )
         self.components_ = X_tensor[self.core_sample_indices_]
-        self.n_clusters = cluster_id  # Update n_clusters with actual number found
+        self.n_clusters = cluster_id
 
         return self
 
@@ -147,11 +143,9 @@ class DBSCAN(BaseClustering):
         X_tensor = self._check_input(X)
         n_samples = X_tensor.shape[0]
 
-        # For each point, find nearest core point and assign its label
         labels = torch.zeros(n_samples, dtype=torch.long, device=self.device)
 
         for i in range(n_samples):
-
             if self.distance == "minkowski":
                 distances = self.calculate_method(
                     self.components_, X_tensor[i].unsqueeze(0), p=self.p
@@ -160,7 +154,6 @@ class DBSCAN(BaseClustering):
                 distances = self.calculate_method(
                     self.components_, X_tensor[i].unsqueeze(0)
                 )
-
             min_idx = torch.argmin(distances)
             labels[i] = self.labels_[self.core_sample_indices_[min_idx]]
 

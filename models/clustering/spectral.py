@@ -38,6 +38,7 @@ class SpectralClustering(BaseClustering):
             n_clusters=n_clusters,
             init="k-means++",
             distance=distance,
+            p=p,
             cpu=cpu,
             device=device,
             dtype=dtype,
