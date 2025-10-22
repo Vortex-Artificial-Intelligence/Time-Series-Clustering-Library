@@ -23,7 +23,7 @@ class HierarchicalClustering(BaseClustering):
         linkage: str = "ward",
         distance: str = "euclidean",
         p: int = 3,
-        compute_full_tree: bool = False,
+        compute_full_tree: bool = False,        # TODO
         cpu: bool = False,
         device: int = 0,
         dtype: torch.dtype = torch.float64,
@@ -162,7 +162,6 @@ class HierarchicalClustering(BaseClustering):
         for i, cluster in enumerate(clusters):
             cluster_info[cluster] = {"indices": [i], "size": 1, "centroid": X_tensor[i]}
 
-        # Compute distance matrix if needed
         if self.linkage != "ward":
             distance_matrix = self._compute_distance_matrix(X_tensor)
 
@@ -304,7 +303,6 @@ class HierarchicalClustering(BaseClustering):
         X_tensor = self._check_input(X)
         n_samples = X_tensor.shape[0]
 
-        # Use stored cluster centers for prediction
         if self.cluster_centers_ is None:
             raise ValueError(
                 "Cluster centers not available. Model may not be properly fitted."

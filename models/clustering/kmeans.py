@@ -76,11 +76,8 @@ class KMeans(BaseClustering):
             first_idx = torch.randint(0, n_samples, (1,), device=self.device)
             centroids[0] = X[first_idx]
 
-            # Subsequent centroids: choose with probability proportional to distance^2
             for i in range(1, self.n_clusters):
-                # Compute distances to nearest centroid for all points
                 distances = self._compute_min_distances(X, centroids[:i])
-
                 # Choose next centroid with probability proportional to distance^2
                 probabilities = distances**2 / torch.sum(distances**2)
                 cumulative_probs = torch.cumsum(probabilities, dim=0)
@@ -105,7 +102,6 @@ class KMeans(BaseClustering):
                 distances = self.calculate_method(X, centroid.unsqueeze(0), p=self.p)
             else:
                 distances = self.calculate_method(X, centroid.unsqueeze(0))
-
             min_distances = torch.min(min_distances, distances)
 
         return min_distances
@@ -129,7 +125,6 @@ class KMeans(BaseClustering):
                     distances[j] = self.calculate_method(
                         X[i].unsqueeze(0), centroids[j].unsqueeze(0)
                     )
-
             min_idx = torch.argmin(distances)
             labels[i] = min_idx
             inertia += distances[min_idx].item()
@@ -157,29 +152,19 @@ class KMeans(BaseClustering):
     def fit(self, X: Union[ndarray, Tensor]) -> "KMeans":
         """Fit K-Means model to the data"""
         X_tensor = self._check_input(X)
-
-        # Initialize centroids
         centroids = self._initialize_centroids(X_tensor)
 
-        # Main iteration loop
         for iteration in range(self.max_iters):
-            # Assign points to clusters
             labels, inertia = self._assign_clusters(X_tensor, centroids)
-
-            # Update centroids
             new_centroids = self._update_centroids(X_tensor, labels)
-
             # Check convergence
             centroid_shift = torch.sqrt(
                 torch.sum((new_centroids - centroids) ** 2, dim=1)
             ).max()
-
             centroids = new_centroids
-
             if centroid_shift < self.tol:
                 break
 
-        # Store results
         self.cluster_centers_ = centroids
         self.labels_ = labels
         self.inertia_ = inertia

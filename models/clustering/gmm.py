@@ -18,9 +18,10 @@ class GaussianMixture(BaseClustering):
         max_iters: int = 100,
         tol: float = 1e-3,
         init_params: str = "kmeans",
-        covariance_type: str = "full",
+        covariance_type: str = "full",      # TODO
         reg_covar: float = 1e-6,
         distance: str = "euclidean",
+        p: int = 3,
         cpu: bool = False,
         device: int = 0,
         dtype: torch.dtype = torch.float64,
@@ -30,6 +31,7 @@ class GaussianMixture(BaseClustering):
             n_clusters=n_clusters,
             init="k-means++",
             distance=distance,
+            p=p,
             cpu=cpu,
             device=device,
             dtype=dtype,
@@ -48,6 +50,7 @@ class GaussianMixture(BaseClustering):
         self.init_params = init_params
         self.covariance_type = covariance_type
         self.reg_covar = reg_covar
+        self.p = p
         self.weights_ = None
         self.means_ = None
         self.covariances_ = None
@@ -189,7 +192,6 @@ class GaussianMixture(BaseClustering):
         """Fit GMM to the data using EM algorithm"""
         X_tensor = self._check_input(X)
 
-        # Initialize parameters
         self._initialize_parameters(X_tensor)
 
         # EM algorithm
@@ -208,7 +210,6 @@ class GaussianMixture(BaseClustering):
             self._m_step(X_tensor, resp)
             prev_lower_bound = lower_bound
 
-        # Assign labels based on maximum responsibility
         _, labels = torch.max(resp, dim=1)
         self.labels_ = labels
         self.cluster_centers_ = self.means_
